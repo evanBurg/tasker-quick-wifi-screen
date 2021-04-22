@@ -3,7 +3,7 @@ import WifiIcon from "./WifiIcon";
 import "./App.css";
 import Ripple from "react-material-ripple";
 
-const LOCAL = true;
+const LOCAL = false;
 
 const mockWifi = {
   wifis: [
@@ -142,21 +142,45 @@ const sortWifi = (a, b) => {
 
 function App() {
   const [wifiNetworks, setWifiNetworks] = useState([]);
-
+  /*eslint-disable no-undef*/
   useEffect(() => {
     if (LOCAL) {
       return setWifiNetworks(mockWifi.wifis.sort(sortWifi));
     }
 
-    //Get from tasker
+    window.checkInterval = setInterval(() => {
+      if (getNetworks) {
+        clearInterval(window.checkInterval);
+        setWifiNetworks(getNetworks().wifis.sort(sortWifi));
+      }
+    }, 100);
   }, []);
+
+  const connectToNetwork = (network) => {
+    AutoTools.sendCommand(network.ssid);
+    AutoTools.say(`Connecting to ${network.ssid}...`);
+    AutoTools.hapticFeedback();
+  };
+  /*eslint-disable no-undef*/
 
   return (
     <>
       <div className="tasker-quick-wifi">
+        {wifiNetworks.length === 0 && (
+          <div className={["tasker-quick-wifi__network"].join(" ")}>
+            <div className="tasker-quick-wifi__network-name">
+              <p>{"No Networks Available"}</p>
+              <p>Check tasker for issues</p>
+            </div>
+          </div>
+        )}
         {wifiNetworks.map((w, idx) => (
-          <Ripple key={`${w.ssid} + ${w.bandwidth} + ${w.frequency} + ${idx}`} className="tasker-quick-wifi__network-ripple">
+          <Ripple
+            key={`${w.ssid} + ${w.bandwidth} + ${w.frequency} + ${idx}`}
+            className="tasker-quick-wifi__network-ripple"
+          >
             <div
+              onClick={() => connectToNetwork(w)}
               className={[
                 "tasker-quick-wifi__network",
                 w.connected ? "tasker-quick-wifi__network-connected" : "",

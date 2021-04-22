@@ -1,15 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
 
+body {
+  background-color: black;
+}
+
 .tasker-quick-wifi {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  
-  min-height: 300px;
-  width: 250px;
-  max-width: 90vw;
-  max-height: 90vh;
+  height: 100%;
+  width: 100%;
   overflow: hidden;
   overflow-y: auto;
   background-color: black;
