@@ -98,6 +98,7 @@ const sortWifi = (a, b) => {
 function App() {
   const [wifiNetworks, setWifiNetworks] = useState([]);
 
+  /*eslint-disable no-undef*/
   const parseNetworksDOM = () => {
     try {
       if (getNetworks) {
@@ -107,7 +108,6 @@ function App() {
     } catch (e) {}
   }
 
-  /*eslint-disable no-undef*/
   useEffect(() => {
     AutoTools.setDefault("networks", { wifis: [] });
     try {
