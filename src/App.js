@@ -117,9 +117,7 @@ function App() {
   }
 
   useEffect(() => {
-
-
-
+    detectLoading();
     AutoTools.setDefault("networks", { wifis: [] });
     try {
       if (LOCAL) {
