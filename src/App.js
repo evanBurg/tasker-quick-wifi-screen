@@ -5,7 +5,8 @@ import Ripple from "react-material-ripple";
 import "./App.css";
 
 const LOCAL = process.env.NODE_ENV === "development";
-
+//Try for 1min
+const MAX_LOOPS = 1200;
 const mockWifi = {
   wifis: [
     {
@@ -97,50 +98,76 @@ const sortWifi = (a, b) => {
 function App() {
   const [wifiNetworks, setWifiNetworks] = useState([]);
 
+  const parseNetworksDOM = () => {
+    try {
+      if (getNetworks) {
+        clearInterval(window.checkInterval);
+        return setWifiNetworks(getNetworks().wifis.sort(sortWifi));
+      }
+    } catch (e) {}
+  }
+
   /*eslint-disable no-undef*/
   useEffect(() => {
     AutoTools.setDefault("networks", { wifis: [] });
-    
-    if (LOCAL) {
-      return setWifiNetworks(mockWifi.wifis.sort(sortWifi));
-    }else{
-      AutoTools.setSize("350", "420");
+    try {
+      if (LOCAL) {
+        return setWifiNetworks(mockWifi.wifis.sort(sortWifi));
+      } else {
+        AutoToolsAndroid &&
+          AutoTools &&
+          AutoTools.setSize &&
+          AutoTools.setSize("350", "420");
+      }
+    } catch (e) {
+      console.log("Issue setting size");
     }
 
+    parseNetworksDOM();
     window.checkInterval = setInterval(() => {
-      if (getNetworks) {
+      parseNetworksDOM()
+
+      window.currentNetworkCheckLoop = !window.currentNetworkCheckLoop
+        ? 0
+        : window.currentNetworkCheckLoop + 1;
+
+      if (window.currentNetworkCheckLoop >= MAX_LOOPS)
         clearInterval(window.checkInterval);
-        setWifiNetworks(getNetworks().wifis.sort(sortWifi));
-      }
     }, 50);
   }, []);
 
-  //Im trying to see how to access the networks variable sent from Tasker properly
-  const postLog = (log) => {
-    const url = "/log-tasker";
-
-    const response = fetch(url, {
-      method: "POST",
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(log),
-    });
-  };
-
   const connectToNetwork = (network) => {
-    postLog({
-      log: {
-        isSet: AutoTools.isSet("networks"),
-        networks: networks,
-        windowNetworks: window.networks,
-        AutoToolsfieldToObject: AutoTools.fieldsToObject("networks"),
-      },
-    });
-    if(!LOCAL){
-      AutoTools.sendCommand(network.ssid);
-      AutoTools.hapticFeedback();
+    try {
+      try {
+        window.test.isSet =
+          AutoToolsAndroid && AutoTools && AutoTools.isSet
+            ? AutoTools.isSet("networks")
+            : "error";
+      } catch (e) {
+        window.testisSet = "error";
+      }
+
+      try {
+        window.testwindow.fieldsToObject =
+          AutoToolsAndroid && AutoTools && AutoTools.fieldsToObject
+            ? AutoTools.fieldsToObject("networks")
+            : "error";
+      } catch (e) {
+        window.testfieldsToObject = "error";
+      }
+
+      if (!LOCAL) {
+        AutoToolsAndroid &&
+          AutoTools &&
+          AutoTools.hapticFeedback &&
+          AutoTools.hapticFeedback();
+        AutoToolsAndroid &&
+          AutoTools &&
+          AutoTools.sendCommand &&
+          AutoTools.sendCommand(network.ssid);
+      }
+    } catch (e) {
+      console.log("Issue connecting to network");
     }
   };
   /*eslint-disable no-undef*/
@@ -157,8 +184,8 @@ function App() {
           <div className={["tasker-quick-wifi__network"].join(" ")}>
             <div className="tasker-quick-wifi__network-name --empty">
               <p>{"No Networks Available"}</p>
-              <p style={{marginBottom: 12}}>Check tasker for issues</p>
-              <NoWifi height={34} width={34}/>
+              <p style={{ marginBottom: 12 }}>Check tasker for issues</p>
+              <NoWifi height={34} width={34} />
             </div>
           </div>
         )}
