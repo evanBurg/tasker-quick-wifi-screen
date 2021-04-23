@@ -97,13 +97,14 @@ const sortWifi = (a, b) => {
 };
 
 function App() {
-  const [wifiNetworks, setWifiNetworks] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [wifiNetworks, setWifiNetworks] = useState(undefined);
+  const [loading, setLoading] = useState(true);
 
   /*eslint-disable no-undef*/
   const parseNetworksDOM = () => {
     try {
       if (getNetworks) {
+        setLoading(false)
         clearInterval(window.checkInterval);
         return setWifiNetworks(getNetworks().wifis.sort(sortWifi));
       }
@@ -118,9 +119,11 @@ function App() {
 
   useEffect(() => {
     detectLoading();
+    window.setLoading = setLoading;
     AutoTools.setDefault("networks", { wifis: [] });
     try {
       if (LOCAL) {
+        setLoading(false)
         return setWifiNetworks(mockWifi.wifis.sort(sortWifi));
       } else {
         AutoToolsAndroid &&
@@ -186,10 +189,10 @@ function App() {
       <div
         className={[
           "tasker-quick-wifi",
-          wifiNetworks.length === 0 ? "--empty" : "",
+          (wifiNetworks?.length === 0 || wifiNetworks === undefined) ? "--empty" : "",
         ].join(" ")}
       >
-        {loading && (!wifiNetworks || wifiNetworks.length === 0) && (
+        {(loading || wifiNetworks === undefined) && (
           <div className={["tasker-quick-wifi__network"].join(" ")}>
             <div className="tasker-quick-wifi__network-name --empty">
               <p>{"Network Scan in Progress"}</p>
@@ -198,7 +201,7 @@ function App() {
             </div>
           </div>
         )}
-        {!loading && (!wifiNetworks || wifiNetworks.length === 0) && (
+        {!loading && (wifiNetworks !== undefined && wifiNetworks?.length === 0) && (
           <div className={["tasker-quick-wifi__network"].join(" ")}>
             <div className="tasker-quick-wifi__network-name --empty">
               <p>{"No Networks Available"}</p>
