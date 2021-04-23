@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import WifiIcon from "./WifiIcon";
 import NoWifi from "./NoWifi";
+import Pending from "./Pending";
 import Ripple from "react-material-ripple";
 import "./App.css";
 
@@ -97,6 +98,7 @@ const sortWifi = (a, b) => {
 
 function App() {
   const [wifiNetworks, setWifiNetworks] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   /*eslint-disable no-undef*/
   const parseNetworksDOM = () => {
@@ -108,7 +110,16 @@ function App() {
     } catch (e) {}
   }
 
+  const detectLoading = () => {
+    const url = new URL(window.location.href);
+    const loadingSearchParam = url.searchParams.get("loading") === "true";
+    setLoading(loadingSearchParam)
+  }
+
   useEffect(() => {
+
+
+
     AutoTools.setDefault("networks", { wifis: [] });
     try {
       if (LOCAL) {
@@ -180,7 +191,16 @@ function App() {
           wifiNetworks.length === 0 ? "--empty" : "",
         ].join(" ")}
       >
-        {(!wifiNetworks || wifiNetworks.length === 0) && (
+        {loading && (!wifiNetworks || wifiNetworks.length === 0) && (
+          <div className={["tasker-quick-wifi__network"].join(" ")}>
+            <div className="tasker-quick-wifi__network-name --empty">
+              <p>{"Network Scan in Progress"}</p>
+              <p style={{ marginBottom: 12 }}>Just a moment...</p>
+              <Pending height={34} width={34} />
+            </div>
+          </div>
+        )}
+        {!loading && (!wifiNetworks || wifiNetworks.length === 0) && (
           <div className={["tasker-quick-wifi__network"].join(" ")}>
             <div className="tasker-quick-wifi__network-name --empty">
               <p>{"No Networks Available"}</p>
