@@ -210,7 +210,7 @@ function App() {
             </div>
           </div>
         )}
-        {wifiNetworks.map((w, idx) => (
+        {(wifiNetworks || []).map((w, idx) => (
           <Ripple
             key={`${w.ssid} + ${w.bandwidth} + ${w.frequency} + ${idx}`}
             className="tasker-quick-wifi__network-ripple"
