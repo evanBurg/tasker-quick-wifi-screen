@@ -1,17 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
 
+:root {
+  --bg-color: black;
+  --ssid-color: white;
+  --status-color: #b4b4b4;
+  --wifi-icon-bg: #111541;
+  --wifi-icon-fg: #463fc1;
+  --border-connected: #252525;
+}
+
 body {
-  background-color: black;
+  background-color: var(--bg-color);
 }
 
 .tasker-quick-wifi {
-  height: 100%;
   width: 100%;
   overflow: hidden;
   overflow-y: auto;
-  background-color: black;
+  background-color: var(--bg-color);
   border-radius: 4px;
   padding: 8px 0;
+}
+
+.tasker-quick-wifi.--empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  padding: 0 0;
 }
 
 .tasker-quick-wifi__network {
@@ -28,7 +46,7 @@ body {
 }
 
 .tasker-quick-wifi__network-name > p {
-  color: white;
+  color: var(--ssid-color);
   font-size: 18px;
   line-height: 22px;
   margin-bottom: 4px;
@@ -39,11 +57,22 @@ body {
   max-width: 80%;
 }
 
-.tasker-quick-wifi__network-name > p:last-child {
+.tasker-quick-wifi__network-name > p:nth-child(2) {
   margin-bottom: unset;
   font-size: 15px;
   line-height: 15px;
-  color: #b4b4b4;
+  color: var(--status-color);
+}
+
+.tasker-quick-wifi__network-name.--empty {
+  text-align: center;
+}
+.tasker-quick-wifi__network-name.--empty > p {
+  max-width: unset;
+}
+.tasker-quick-wifi__network-name.--empty svg {
+  color: var(--status-color);
+  fill: var(--status-color);
 }
 
 .tasker-quick-wifi__network-icon {
@@ -51,8 +80,8 @@ body {
   position: relative;
 }
 .tasker-quick-wifi__network-icon > svg {
-  color: #111541;
-  fill: #111541;
+  color: var(--wifi-icon-bg);
+  fill: var(--wifi-icon-bg);
 }
 .tasker-quick-wifi__network-icon-strength {
   position: absolute;
@@ -64,18 +93,18 @@ body {
   align-items: flex-end;
 }
 .tasker-quick-wifi__network-icon-strength > svg {
-  color: #463fc1;
-  fill: #463fc1;
+  color: var(--wifi-icon-fg);
+  fill: var(--wifi-icon-fg);
 }
 
 .tasker-quick-wifi__network-connected {
-  border-bottom: 1px solid #252525;
+  border-bottom: 1px solid var(--border-connected);
   padding-bottom: 12px;
   margin-bottom: 6px;
 }
 
 .tasker-quick-wifi .ripple {
-  background: #b4b4b4 !important;
+  background: var(--status-color) !important;
 }
 .tasker-quick-wifi .rippleContainer {
   width: 100%;

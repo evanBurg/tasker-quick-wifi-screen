@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import WifiIcon from "./WifiIcon";
-import "./App.css";
+import NoWifi from "./NoWifi";
 import Ripple from "react-material-ripple";
+import "./App.css";
 
-const LOCAL = false;
+const LOCAL = process.env.NODE_ENV === "development";
 
 const mockWifi = {
   wifis: [
@@ -18,7 +19,7 @@ const mockWifi = {
       level: -49,
       mac: "dc:ef:09:dd:e4:92",
       seen: 1619123030939,
-      ssid: "Burgess Home Outside",
+      ssid: "Home Outside",
       untrusted: false,
     },
     {
@@ -38,21 +39,7 @@ const mockWifi = {
       level: -67,
       mac: "b0:df:c1:43:b2:c5",
       seen: 1619123030940,
-      ssid: "Kevfi_5G",
-      untrusted: false,
-    },
-    {
-      bandwidth: "80",
-      capabilities: ["WPA2-PSK-CCMP", "RSN-PSK-CCMP", "ESS"],
-      channel: -1,
-      connected: false,
-      distanceCm: -1,
-      distanceErrorCm: -1,
-      frequency: 5180,
-      level: -70,
-      mac: "94:6a:77:11:0f:3d",
-      seen: 1619123030940,
-      ssid: "",
+      ssid: "Kev_5G",
       untrusted: false,
     },
     {
@@ -66,30 +53,11 @@ const mockWifi = {
       level: -71,
       mac: "94:6a:77:11:0f:3c",
       seen: 1619123030939,
-      ssid: "Burgess Home 5.0",
+      ssid: "Home 5.0",
       untrusted: false,
     },
     {
-      bandwidth: "80",
-      capabilities: [
-        "WPA2-EAP-CCMP+TKIP",
-        "RSN-EAP-CCMP+TKIP",
-        "WPA-EAP-CCMP+TKIP",
-        "ESS",
-      ],
-      channel: -1,
-      connected: false,
-      distanceCm: -1,
-      distanceErrorCm: -1,
-      frequency: 5180,
-      level: -71,
-      mac: "94:6a:77:11:0f:41",
-      seen: 1619123030940,
-      ssid: "",
-      untrusted: false,
-    },
-    {
-      bandwidth: "20",
+      bandwidth: "0",
       capabilities: ["ESS"],
       channel: 1,
       connected: false,
@@ -99,7 +67,7 @@ const mockWifi = {
       level: -73,
       mac: "fa:8f:ca:7c:5e:24",
       seen: 1619123030941,
-      ssid: "Dining Room speaker.ynm",
+      ssid: "Dining Room",
       untrusted: false,
     },
   ],
@@ -111,41 +79,32 @@ const sortWifi = (a, b) => {
   const aBandwidth = a.bandwidth ? parseInt(a.bandwidth) : 0;
   const bBandwidth = b.bandwidth ? parseInt(b.bandwidth) : 0;
 
-  if (a.connected) {
-    return -1;
-  }
+  //Connected at the top
+  if (a.connected) return -1;
+  else if (b.connected) return 1;
 
-  if (b.connected) {
-    return 1;
-  }
+  //Sort first by Saved
+  if (aTrusted && !bTrusted) return -1;
+  else if (!aTrusted && bTrusted) return 1;
 
-  if (aTrusted && !bTrusted) {
-    return -1;
-  }
+  //Then by bandwidth
+  if (aBandwidth === bBandwidth) return 0;
+  if (aBandwidth < bBandwidth) return 1;
 
-  if (!aTrusted && bTrusted) {
-    return 1;
-  }
-
-  if (aBandwidth > bBandwidth) {
-    return -1;
-  }
-
-  if (aBandwidth < bBandwidth) {
-    return 1;
-  }
-
-  if (aBandwidth === bBandwidth) {
-    return 0;
-  }
+  return -1;
 };
 
 function App() {
   const [wifiNetworks, setWifiNetworks] = useState([]);
+
   /*eslint-disable no-undef*/
   useEffect(() => {
+    AutoTools.setDefault("networks", { wifis: [] });
+    
     if (LOCAL) {
       return setWifiNetworks(mockWifi.wifis.sort(sortWifi));
+    }else{
+      AutoTools.setSize("350", "420");
     }
 
     window.checkInterval = setInterval(() => {
@@ -153,24 +112,53 @@ function App() {
         clearInterval(window.checkInterval);
         setWifiNetworks(getNetworks().wifis.sort(sortWifi));
       }
-    }, 100);
+    }, 50);
   }, []);
 
+  //Im trying to see how to access the networks variable sent from Tasker properly
+  const postLog = (log) => {
+    const url = "/log-tasker";
+
+    const response = fetch(url, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(log),
+    });
+  };
+
   const connectToNetwork = (network) => {
-    AutoTools.sendCommand(network.ssid);
-    AutoTools.say(`Connecting to ${network.ssid}...`);
-    AutoTools.hapticFeedback();
+    postLog({
+      log: {
+        isSet: AutoTools.isSet("networks"),
+        networks: networks,
+        windowNetworks: window.networks,
+        AutoToolsfieldToObject: AutoTools.fieldsToObject("networks"),
+      },
+    });
+    if(!LOCAL){
+      AutoTools.sendCommand(network.ssid);
+      AutoTools.hapticFeedback();
+    }
   };
   /*eslint-disable no-undef*/
 
   return (
     <>
-      <div className="tasker-quick-wifi">
-        {wifiNetworks.length === 0 && (
+      <div
+        className={[
+          "tasker-quick-wifi",
+          wifiNetworks.length === 0 ? "--empty" : "",
+        ].join(" ")}
+      >
+        {(!wifiNetworks || wifiNetworks.length === 0) && (
           <div className={["tasker-quick-wifi__network"].join(" ")}>
-            <div className="tasker-quick-wifi__network-name">
+            <div className="tasker-quick-wifi__network-name --empty">
               <p>{"No Networks Available"}</p>
-              <p>Check tasker for issues</p>
+              <p style={{marginBottom: 12}}>Check tasker for issues</p>
+              <NoWifi height={34} width={34}/>
             </div>
           </div>
         )}
@@ -187,7 +175,7 @@ function App() {
               ].join(" ")}
             >
               <div className="tasker-quick-wifi__network-icon">
-                <WifiIcon height={24} width={24} />
+                <WifiIcon />
                 <div
                   className="tasker-quick-wifi__network-icon-strength"
                   style={{
